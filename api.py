@@ -3,7 +3,7 @@ import sqlite3
 
 app = Flask(__name__)
 DATABASE = 'biblioteca.db'
-app.secret_key = 'sua_chave_secreta_aqui'
+app.secret_key = 'chave_secreta'
 
 
 def init_db():
@@ -18,7 +18,7 @@ def init_db():
         ''')
         print("\n ---- BIBLIOTECA ABERTA ---- ")
 
-
+#---função de página inicial---
 @app.route('/', methods=['GET'])
 def pagina_inicial():
     with sqlite3.connect(DATABASE) as conn:
@@ -29,7 +29,7 @@ def pagina_inicial():
         resultado = [dict(row) for row in livros]
         return render_template('index.html', resultados=resultado)
 
-
+#---função de buscar livro por id---
 @app.route('/livros/<int:id>', methods=['GET'])
 def livro_id(id):
     with sqlite3.connect(DATABASE) as conn:
@@ -43,7 +43,7 @@ def livro_id(id):
             return jsonify(dict(livro_row))
         return jsonify({'erro': 'Livro não encontrado'}), 404
 
-
+#---função de buscar livro por gênero---
 @app.route('/livros/genero/<string:genero_nome>', methods=['GET'])
 def genero_livros(genero_nome):
     with sqlite3.connect(DATABASE) as conn:
@@ -56,24 +56,24 @@ def genero_livros(genero_nome):
             resultado = [dict(row) for row in livros_row]
             return jsonify(resultado)
         return jsonify({'erro': 'livro não encontrado'}), 404
-
-
-@app.route('/livros/editar/<int:id>', methods=['GET'])
-def pagina_editar(id):
-
+   
+@app.route('/livros/genero', methods=['GET'])
+def genero_livros_html():
+    genero = request.args.get('genero')
     with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        livro = cursor.execute(
-            "SELECT * FROM livros WHERE id=?", (id,)).fetchone()
+        cursor.execute("SELECT * FROM livros WHERE genero LIKE ?", (f"%{genero}%",))
+        livros_row = cursor.fetchall()
 
-    if livro is None:
-        return "Livro não encontrado", 404
+        if livros_row:
+            resultado = [dict(row) for row in livros_row]
+            return render_template('index.html', resultados=resultado)
+        return jsonify({'erro': 'livro não encontrado'}), 404
 
-    return render_template("editar.html", livro=dict(livro))
 
-
-@app.route('/livros', methods=['POST'])
+#---função de adicionar livro---
+@app.route('/livros/add', methods=['POST'])
 def adicionar_livro():
     nome = request.form.get('nome')
     genero = request.form.get('genero')
@@ -90,11 +90,22 @@ def adicionar_livro():
             "INSERT INTO livros (nome, genero, ano) VALUES (?,?,?)",
             (nome, genero, ano)
         )
-
         conn.commit()
     return redirect(url_for('pagina_inicial'))
 
+#---função de página de adicionar livro---
+@app.route('/livros/add', methods=['GET'])
+def pagina_adicionar():
+    with sqlite3.connect(DATABASE) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        livros = cursor.execute("SELECT * FROM livros").fetchall()
 
+        resultado = [dict(row) for row in livros]
+        return render_template('adicionar.html', resultados=resultado)
+    
+
+#---função de atualizar livro---
 @app.route('/livros/atualizar/<int:id>', methods=['POST'])
 def atualizar_livros(id):
     nome = request.form.get('nome')
@@ -117,8 +128,24 @@ def atualizar_livros(id):
 
         conn.commit()
         return redirect(url_for('pagina_inicial'))
+    
+#---função de editar livro---
+@app.route('/livros/editar/<int:id>', methods=['GET'])
+def pagina_editar(id):
+
+    with sqlite3.connect(DATABASE) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        livro = cursor.execute(
+            "SELECT * FROM livros WHERE id=?", (id,)).fetchone()
+
+    if livro is None:
+        return "Livro não encontrado", 404
+
+    return render_template("editar.html", livro=dict(livro))
 
 
+#---função de deletar livro---
 @app.route('/livros/deletar/<int:id>', methods=['POST'])
 def deletar_livro(id):
     with sqlite3.connect(DATABASE) as conn:

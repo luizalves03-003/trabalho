@@ -11,24 +11,35 @@
 <body class="container mt-5">
     <h1> Biblioteca </h1>
 
-    <form action="{{url_for('adicionar_livro')}}" method="POST" class="mt-4">
-        <div class="mb-3">
-            <label for="nome" class="form-label">Nome do Livro</label>
-            <input type="text" class="form-control" id="nome" name="nome" required>
-        </div>
-        <div class="mb-3">
-            <label for="genero" class="form-label">Gênero</label>
-            <input type="text" class="form-control" id="genero" name="genero" required>
-        </div>
-        <div class="mb-3">
-            <label for="ano" class="form-label">Ano</label>
-            <input type="number" class="form-control" id="ano" name="ano" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Adicionar Livro</button>
-    </form>
+            <a
+            href="{{ url_for('pagina_adicionar') }}"
+            class="btn btn-primary btn-sm">
 
+            Adicionar Livro
 
+        </a>
+<form action="{{ url_for('genero_livros_html') }}" method="GET" class="row g-3 mb-4">
 
+    <div class="col-md-8">
+        <input
+            type="text"
+            name="genero"
+            class="form-control"
+            placeholder="Pesquisar por gênero">
+    </div>
+
+    <div class="col-md-4">
+        <button type="submit" class="btn btn-primary">
+            Buscar
+        </button>
+
+        <a href="{{ url_for('pagina_inicial') }}"
+           class="btn btn-secondary">
+            Limpar
+        </a>
+    </div>
+
+</form>
 
     <table class="table table-striped mt-4">
         <thead>
