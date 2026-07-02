@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="PT-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+</head>
+<body class="container mt-5">
+    <h1> Biblioteca </h1>
+
+    <form action="{{url_for('adicionar_livro')}}" method="POST" class="mt-4">
+        <div class="mb-3">
+            <label for="nome" class="form-label">Nome do Livro</label>
+            <input type="text" class="form-control" id="nome" name="nome" required>
+        </div>
+        <div class="mb-3">
+            <label for="genero" class="form-label">Gênero</label>
+            <input type="text" class="form-control" id="genero" name="genero" required>
+        </div>
+        <div class="mb-3">
+            <label for="ano" class="form-label">Ano</label>
+            <input type="number" class="form-control" id="ano" name="ano" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Adicionar Livro</button>
+    </form>
+
+
+
+
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Gênero</th>
+                <th scope="col">ano</th>
+                <th scope="col">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in resultados %}
+            <tr>
+                <th scope="row">{{item.id}}</th>
+                <td>{{item.nome}}</td>
+                <td>{{item.genero}}</td>
+                <td>{{item.ano}}</td>
+         
+                
+                <td>
+
+        <a
+            href="{{ url_for('pagina_editar', id=item.id) }}"
+            class="btn btn-warning btn-sm">
+
+            Editar
+
+        </a>
+
+        <form
+            action="{{ url_for('deletar_livro', id=item.id) }}"
+            method="POST"
+            style="display:inline;">
+
+            <button
+                class="btn btn-danger btn-sm"
+                onclick="return confirm('Deseja remover este livro?')">
+
+                Remover
+
+            </button>
+
+        </form>
+
+    </td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>
