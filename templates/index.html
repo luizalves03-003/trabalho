@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="PT-br">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca</title>
 
@@ -10,14 +10,15 @@
 </head>
 <body class="container mt-5">
     <h1> Biblioteca </h1>
+    <h6>Bem-vindo!</h6>
+    <div class="d-flex justify-content-between mb-4">
 
-            <a
-            href="{{ url_for('pagina_adicionar') }}"
-            class="btn btn-primary btn-sm">
+    <a href="{{ url_for('logout') }}" class="btn btn-danger">
+        Sair
+    </a>
+</div>
 
-            Adicionar Livro
 
-        </a>
 <form action="{{ url_for('genero_livros_html') }}" method="GET" class="row g-3 mb-4">
 
     <div class="col-md-8">
@@ -33,15 +34,13 @@
             Buscar
         </button>
 
-        <a href="{{ url_for('pagina_inicial') }}"
-           class="btn btn-secondary">
-            Limpar
-        </a>
+        <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary">Limpar</a>
     </div>
+         <a href="{{ url_for('pagina_adicionar') }}" class="btn btn-primary btn-sm">Adicionar Livro</a>
 
 </form>
 
-    <table class="table table-striped mt-4">
+    <table class="table table-striped mt-4" style="border: 1px solid #2b8dee; border-radius: 5px; overflow: hidden; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.412);">
         <thead>
             <tr>
                 <th scope="col">ID</th>
@@ -63,25 +62,11 @@
                 <td>
 
         <a
-            href="{{ url_for('pagina_editar', id=item.id) }}"
-            class="btn btn-warning btn-sm">
+            href="{{ url_for('pagina_editar', id=item.id) }}" class="btn btn-warning btn-sm">Editar</a>
 
-            Editar
+        <form action="{{ url_for('deletar_livro', id=item.id) }}" method="POST" style="display:inline;">
 
-        </a>
-
-        <form
-            action="{{ url_for('deletar_livro', id=item.id) }}"
-            method="POST"
-            style="display:inline;">
-
-            <button
-                class="btn btn-danger btn-sm"
-                onclick="return confirm('Deseja remover este livro?')">
-
-                Remover
-
-            </button>
+            <button class="btn btn-danger btn-sm" onclick="return confirm('Deseja remover este livro?')">Remover</button>
 
         </form>
 
