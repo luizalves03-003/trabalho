@@ -54,41 +54,43 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# ---função de buscar livro por id---
-
-
-@app.route('/livros/<int:id>', methods=['GET'])
-def livro_id(id):
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT * FROM livros WHERE id = ?", (id,))
-        livro_row = cursor. fetchone()
-
-        if livro_row:
-            return jsonify(dict(livro_row))
-        return jsonify({'erro': 'Livro não encontrado'}), 404
 
 # ---função de buscar livro por gênero---
 
 
-@app.route('/livros/genero/<string:genero_nome>', methods=['GET'])
-def genero_livros(genero_nome):
+@app.route('/livros/busca', methods=['GET'])
+def busca_livros():
+
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+    
+    ano = request.args.get('ano')
+    nome = request.args.get('nome')
+    genero = request.args.get('genero')
+
+
+
     with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM livros WHERE genero = ?", (genero_nome,))
-        livros_row = cursor.fetchall()
+        busca = request.args.get('busca')
+        if busca.isdigit():
+            cursor.execute("SELECT * FROM livros WHERE nome = ? OR genero LIKE ? OR ano LIKE ?", (int(busca), f"%{busca}%", f"%{busca}%"))
+        else:
+            cursor.execute("SELECT * FROM livros WHERE genero LIKE ? OR nome LIKE ?", (f"%{busca}%", f"%{busca}%"))
+        
+        livros = cursor.fetchall()
+        resultado = [dict(row) for row in livros]
+        return render_template('index.html', resultados=resultado)
 
-        if livros_row:
-            resultado = [dict(row) for row in livros_row]
-            return jsonify(resultado)
-        return jsonify({'erro': 'livro não encontrado'}), 404
 
 
 @app.route('/livros/genero', methods=['GET'])
 def genero_livros_html():
+
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+
     genero = request.args.get('genero')
     with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
@@ -133,6 +135,10 @@ def adicionar_livro():
 
 @app.route('/livros/add', methods=['GET'])
 def pagina_adicionar():
+
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+
     with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
@@ -174,6 +180,9 @@ def atualizar_livros(id):
 # ---função de editar livro---
 @app.route('/livros/editar/<int:id>', methods=['GET'])
 def pagina_editar(id):
+
+    if 'usuario' not in session:
+        return redirect(url_for('login'))    
 
     with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
@@ -242,16 +251,6 @@ def login():
     return render_template('login.html')
 
 
-@app.route('/login/entrar', methods=['GET'])
-def pagina_login():
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        usuarios = cursor.execute("SELECT * FROM usuarios").fetchall()
-
-        logar = [dict(row) for row in usuarios]
-        return render_template('login.html', resultados=logar)
-
 
 @app.route('/cadastro', methods=['GET','POST'])
 def cadastro():
@@ -275,9 +274,14 @@ def cadastro():
                 (nome, senha_hash)
             )
 
+        usuario = cursor.fetchone()
+
+        if usuario:
+            return render_template('cadastro.html', erro='Usuário já existe.')  
+        
             conn.commit()
 
-        return redirect(url_for('pagina_login'))
+        return redirect(url_for('login'))
 
     return render_template('cadastro.html')
 

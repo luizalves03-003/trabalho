@@ -19,14 +19,14 @@
 </div>
 
 
-<form action="{{ url_for('genero_livros_html') }}" method="GET" class="row g-3 mb-4">
+<form action="{{ url_for('busca_livros') }}" method="GET" class="row g-3 mb-4">
 
     <div class="col-md-8">
         <input
             type="text"
-            name="genero"
+            name="busca"
             class="form-control"
-            placeholder="Pesquisar por gênero">
+            placeholder="Pesquisar por Nome, Gênero ou Ano">
     </div>
 
     <div class="col-md-4">
