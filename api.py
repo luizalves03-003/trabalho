@@ -62,8 +62,6 @@ def init_db():
         print("\n ---- BIBLIOTECA ABERTA ---- ")
 
 # ---função de página inicial---
-
-
 @app.route('/', methods=['GET'])
 def pagina_inicial():
 
@@ -98,14 +96,12 @@ def busca_livros():
     nome = request.args.get('nome')
     genero = request.args.get('genero')
 
-
-
     with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         busca = request.args.get('busca')
         if busca.isdigit():
-            cursor.execute("SELECT * FROM livros WHERE nome = ? OR genero LIKE ? OR ano = ?", f"%{busca}%", f"%{busca}%", (int(busca)))
+            cursor.execute("SELECT * FROM livros WHERE nome = ? OR genero LIKE ? OR ano = ?", f"%{busca}%", f"%{busca}%", int(busca))
         else:
             cursor.execute("SELECT * FROM livros WHERE genero LIKE ? OR nome LIKE ?", (f"%{busca}%", f"%{busca}%"))
         
@@ -142,9 +138,8 @@ def adicionar_livro():
         conn.commit()
     return redirect(url_for('pagina_inicial'))
 
+
 # ---função de página de adicionar livro---
-
-
 @app.route('/livros/add', methods=['GET'])
 def pagina_adicionar():
 
@@ -323,7 +318,7 @@ def cadastro():
 
     return render_template('cadastro.html')
 
-
+#--- função para empréstar livros ---
 @app.route('/livros/emprestar/<int:id>', methods=['POST'])
 def emprestar_livro(id):
 
@@ -346,18 +341,69 @@ def emprestar_livro(id):
             return "Livro não encontrado.", 404
 
         emprestado = cursor.execute(
-            """ SELECT * FROM emprestimos WHERE livro_id=? AND devolver=0 """, (id,)).fetchone()
+            """ SELECT * FROM emprestimos WHERE livro_id=?
+              AND devolver=0 """, 
+              (id,)).fetchone()
 
         if emprestado:
             return "Livro já está emprestado."
 
         cursor.execute(
-            """ INSERT INTO emprestimos (usuario_id, livro_id, data_emprestimo) VALUES (?, ?, ?) """,( usuario_id, id, datetime.now().strftime("%d/%m/%Y")))
+            """ INSERT INTO emprestimos 
+            (usuario_id, livro_id, data_emprestimo) 
+            VALUES (?, ?, ?) """,
+            ( usuario_id, id, 
+             datetime.now().strftime("%d/%m/%Y")))
 
         conn.commit()
 
     return redirect(url_for('pagina_inicial'))
 
+
+
+#--- função da página da lista de empréstimos ---
+@app.route('/livros/em', methods=['GET'])
+def pagina_lisat_emprestimos():
+
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+
+    with sqlite3.connect(DATABASE) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        lista_emprestimo = cursor.execute("SELECT * FROM livros").fetchall()
+
+        resultado = [dict(row) for row in lista_emprestimo]
+        return render_template('emprestimos.html', resultados=resultado)
+
+
+@app.route('/lista/emprestimo', methods=['GET'])
+def listar_emprestimos():
+
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+    
+    if session['perfil'] != 'admin':
+        return "Acesso negado", 403
+
+    with sqlite3.connect(DATABASE) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        emprestimos = cursor.execute("""
+            SELECT
+                e.id, u.nome AS usuario, l.nome AS livro, e.data_emprestimo FROM emprestimos e
+            JOIN usuarios u
+                ON e.usuario_id = u.id
+            JOIN livros l
+                ON e.livro_id = l.id
+            WHERE e.devolver = 0
+        """).fetchall()
+
+    return render_template('emprestimos.html', emprestimos=emprestimos)
+
+    
+
+#--- função para devolver o livro ---
 @app.route('/devolver/<int:id>', methods=['POST'])
 def devolver(id):
 
