@@ -67,6 +67,14 @@ def pagina_inicial():
 
     if 'usuario' not in session:
         return redirect(url_for('login'))
+    
+    return render_template('inicio.html')
+
+@app.route('/lista/livros', methods=['GET'])
+def lista_livros():
+
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
 
     with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
@@ -84,8 +92,6 @@ def logout():
 
 
 # ---função de buscar livro por gênero---
-
-
 @app.route('/livros/busca', methods=['GET'])
 def busca_livros():
 
@@ -136,7 +142,7 @@ def adicionar_livro():
             (nome, genero, ano)
         )
         conn.commit()
-    return redirect(url_for('pagina_inicial'))
+    return redirect(url_for('lista_livros'))
 
 
 # ---função de página de adicionar livro---
@@ -184,7 +190,7 @@ def atualizar_livros(id):
             return jsonify({'erro': 'Livro não encontrado'}), 404
 
         conn.commit()
-        return redirect(url_for('pagina_inicial'))
+        return redirect(url_for('lista_livros'))
 
 
 # ---função de editar livro---
@@ -225,7 +231,7 @@ def deletar_livro(id):
         if cursor.rowcount == 0:
             return jsonify({'erro': 'Livro não encontrado'}), 404
         conn.commit()
-    return redirect(url_for('pagina_inicial'))
+    return redirect(url_for('lista_livros'))
 
 
 # ---função de login---
@@ -357,7 +363,7 @@ def emprestar_livro(id):
 
         conn.commit()
 
-    return redirect(url_for('pagina_inicial'))
+    return redirect(url_for('lista_livros'))
 
 
 

@@ -16,25 +16,23 @@
     <h1>Biblioteca</h1>
     <h6>Bem-vindo!</h6>
 
-    <div class="d-flex justify-content-between mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-4"></div>
 
-        <a href="{{ url_for('logout') }}" class="btn btn-danger">
-            Sair
+        <a href="{{ url_for('pagina_inicial') }}"
+           class="btn btn-secondary">
+            Voltar
         </a>
+    </div>
+
 
         {% if session['perfil'] == 'admin' %}
             <div>
-                <a href="{{ url_for('cadastro') }}" class="btn btn-success">
-                    Cadastrar Usuário
-                </a>
 
                 <a href="{{ url_for('pagina_adicionar') }}" class="btn btn-primary">
                     Adicionar Livro
                 </a>
+                
 
-                <a href="{{ url_for('listar_emprestimos') }}" class="btn btn-warning">
-                    Empréstimos
-                </a>
             </div>
         {% endif %}
 
@@ -55,7 +53,7 @@
                 Buscar
             </button>
 
-            <a href="{{ url_for('pagina_inicial') }}" class="btn btn-secondary">
+            <a href="{{ url_for('lista_livros') }}" class="btn btn-secondary">
                 Limpar
             </a>
 
